@@ -1,11 +1,11 @@
 ## Dependencies
-To get started with Blacklight, first [install Ruby](https://gorails.com/setup/#ruby) and [install Rails](https://gorails.com/setup/#rails), if you don't have it installed already. You'll need Ruby 1.9 or higher, and Rails 3.2 or higher.
+To get started with Blacklight, first [install Ruby](https://gorails.com/setup/#ruby) and [install Rails](https://gorails.com/setup/#rails), if you don't have it installed already. You'll need Ruby 2.1 or higher, and Rails 3.2 or higher.
 
 If you are installing/developing on Linux, you will also need a JavaScript runtime installed, e.g. nodejs.
 
 ### Got Ruby?
 
-You should have Ruby 2.2 or greater installed.
+You should have Ruby 2.1 or greater installed.
 
 ```console
 $ ruby --version
@@ -22,6 +22,18 @@ $ rails --version
 ```
 
 ## Download and run the EDS Blacklight app
+
+- Clone or download this project
+- Run the following terminal commands in the project's root directory:
+```console
+bundle install
+rake db:migrate
+export EDS_USER="username"
+export EDS_PASS="secret"
+export EDS_PROFILE="eds-api"
+rails server -b 0.0.0.0 -p 3000 -e development
+```
+- Open a browser to http://0.0.0.0:3000/
 
 
 
