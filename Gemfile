@@ -61,6 +61,6 @@ gem 'rsolr', '~> 1.0'
 gem 'devise'
 gem 'devise-guests', '~> 0.5'
 gem 'blacklight-marc', '~> 6.1'
-gem 'ebsco-eds', '~> 0.0.2.pre'
 
+gem 'ebsco-eds', '~> 0.0.4.pre'
 #gem 'ebsco-eds',  :path => '/Users/employee/projects/ebsco-eds-api-gem'
