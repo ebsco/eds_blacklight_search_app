@@ -38,6 +38,7 @@ class CatalogController < ApplicationController
     config.index.title_field = :title_display
     config.index.show_link = 'title_display'
     config.index.record_display_type = 'format'
+    config.index.thumbnail_field = 'cover_medium_url'
 
     #config.add_index_field 'title_display', label: 'Title', :highlight => true
     config.add_index_field 'author_display', label: 'Author'

@@ -21,14 +21,25 @@ module Blacklight::Eds
 
     def send_and_receive(path, search_builder = {}, eds_params = {})
       benchmark('EDS fetch', level: :debug) do
+
         # results list passes a full searchbuilder, detailed record only passes params
         bl_params = search_builder.kind_of?(SearchBuilder) ? search_builder.blacklight_params : search_builder
         # todo: make highlighting configurable
         bl_params = bl_params.update({'hl'=>'on'})
-        # create EDS session, perform search and convert to solr response
-        eds = EBSCO::EDS::Session.new(eds_options(eds_params))
-        results = eds.search(bl_params).to_solr
-        blacklight_config.response_model.new(results, bl_params, document_model: blacklight_config.document_model, blacklight_config: blacklight_config)
+
+        # call solr_retrieve_list if query is for a list of ids (bookmarks, email, sms, cite, etc.)
+        if bl_params && bl_params['q'] && bl_params['q']['id']
+          eds = EBSCO::EDS::Session.new(eds_options(eds_params))
+          results = eds.solr_retrieve_list({list: bl_params['q']['id']})
+          blacklight_config.response_model.new(results, bl_params, document_model: blacklight_config.document_model, blacklight_config: blacklight_config)
+        else
+          # create EDS session, perform search and convert to solr response
+          eds = EBSCO::EDS::Session.new(eds_options(eds_params))
+          results = eds.search(bl_params)
+          results = results.to_solr
+          blacklight_config.response_model.new(results, bl_params, document_model: blacklight_config.document_model, blacklight_config: blacklight_config)
+        end
+
       end
     end
 
