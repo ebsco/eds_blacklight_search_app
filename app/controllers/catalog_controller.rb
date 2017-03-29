@@ -7,32 +7,41 @@ class CatalogController < ApplicationController
 
   before_action :eds_init
   def eds_init
-    guest = false
-    cache_key = 'eds_auth_token/user'
-    if current_or_guest_user.guest
-      guest = true
-      cache_key = 'eds_auth_token/guest'
+
+    # fetch auth token from cache
+    auth_token = Rails.cache.fetch('eds_auth_token', expires_in: 30.minutes, race_condition_ttl: 10) do
+      auth_session = EBSCO::EDS::Session.new(caller: 'create-auth-token')
+      token = auth_session.auth_token
+      auth_session.end
+      token
     end
-    # get auth token from cache
-    auth_token = Rails.cache.fetch(cache_key, expires_in: 30.minutes, race_condition_ttl: 10) do
-      EBSCO::EDS::Session.new.auth_token
-    end
-    session['eds_guest'] = guest
-    if session.has_key?('eds_session_token')
-      # reuse the session
+
+    guest = current_or_guest_user.guest
+    if session.key?('guest')
+      # user login/logon, update guest status in session
+      if session['guest'] != guest
+        session['guest'] = guest
+        s = EBSCO::EDS::Session.new(guest: guest, auth_token: auth_token,
+                                    caller: 'new-session-guest-status-changed')
+        session['eds_session_token'] = s.session_token
+      end
     else
-      session['eds_session_token'] = EBSCO::EDS::Session.new({:guest => guest, :auth_token => auth_token}).session_token
+      # new user session, set guest and session token
+      session['guest'] = guest
+      unless session.key?('eds_session_token')
+        s = EBSCO::EDS::Session.new(guest: guest, auth_token: auth_token,
+                                    caller: 'new-session')
+        session['eds_session_token'] = s.session_token
+      end
     end
 
     puts 'session token: ' + session['eds_session_token'].inspect
-    puts 'session guest: ' + session['eds_guest'].inspect
+    puts 'session guest: ' + session['guest'].inspect
   end
 
   configure_blacklight do |config|
 
-    config.default_solr_params = {
-        rows: 10
-    }
+    config.default_solr_params = { rows: 10 }
 
     # solr field configuration for search results/index views
     config.index.title_field = :title_display
@@ -55,11 +64,13 @@ class CatalogController < ApplicationController
     config.show.pub_date = 'pub_date'
     config.show.pub_info = 'pub_info'
     config.show.abstract = 'abstract'
+    config.show.full_text_url = 'full_text_url'
+    config.show.plink = 'plink'
 
     config.add_facet_field 'search_limiters', label: 'Search Limiters'
     config.add_facet_field 'format', label: 'Format'
     config.add_facet_field 'library_location_facet', label: 'Library Location', limit: true
-    config.add_facet_field 'pub_date', label: 'Publication Year', single: true
+    config.add_facet_field 'pub_date_facet', label: 'Publication Year', single: true
     config.add_facet_field 'category_facet', label: 'Category', limit: 20
     config.add_facet_field 'subject_topic_facet', label: 'Topic', limit: 20
     config.add_facet_field 'language_facet', label: 'Language', limit: true
@@ -76,6 +87,7 @@ class CatalogController < ApplicationController
     config.add_show_field 'pub_date', label: 'Publication Date'
     config.add_show_field 'pub_info', label: 'Published'
     config.add_show_field 'abstract', label: 'Abstract'
+    config.add_show_field 'links', helper_method: :eds_links, label: 'Links'
 
     config.add_search_field 'all_fields', label: 'All Fields'
 

@@ -44,7 +44,7 @@ module Blacklight::Eds::Catalog
   # to add responses for formats other than html or json see _Blacklight::Document::Export_
   def show
 
-    eds_params = {'guest' => session['eds_guest'], 'session_token' => session['eds_session_token']}
+    eds_params = {'guest' => session['guest'], 'session_token' => session['eds_session_token']}
 
     deprecated_response, @document = search_service.fetch(params[:id], eds_params)
     @response = ActiveSupport::Deprecation::DeprecatedObjectProxy.new(deprecated_response, 'The @response instance variable is deprecated; use @document.response instead.')
@@ -151,7 +151,7 @@ module Blacklight::Eds::Catalog
 
   def search_service
 
-    eds_params = {'guest' => session['eds_guest'], 'session_token' => session['eds_session_token']}
+    eds_params = {'guest' => session['guest'], 'session_token' => session['eds_session_token']}
     Blacklight::Eds::SearchService.new(blacklight_config, search_state.to_h, eds_params)
 
   end

@@ -4,12 +4,15 @@ module Blacklight::Eds
   class Repository < Blacklight::AbstractRepository
 
     def find(id, params = {}, eds_params = {})
-      eds = EBSCO::EDS::Session.new(eds_options(eds_params))
+      eds = EBSCO::EDS::Session.new(eds_options(eds_params.update(caller: 'bl-repo-find')))
       dbid = id.split('__').first
       accession = id.split('__').last
       accession.gsub!(/_/, '.')
-      record = eds.retrieve({dbid: dbid, an: accession})
-      blacklight_config.response_model.new(record.to_solr, params, document_model: blacklight_config.document_model, blacklight_config: blacklight_config)
+      record = eds.retrieve(dbid: dbid, an: accession)
+      solr_result = record.to_solr
+      blacklight_config.response_model.new(solr_result, params,
+                                           document_model: blacklight_config.document_model,
+                                           blacklight_config: blacklight_config)
     end
 
     ##
@@ -24,22 +27,19 @@ module Blacklight::Eds
 
         # results list passes a full searchbuilder, detailed record only passes params
         bl_params = search_builder.kind_of?(SearchBuilder) ? search_builder.blacklight_params : search_builder
-        # todo: make highlighting configurable
-        bl_params = bl_params.update({'hl'=>'on'})
-
+        # TODO: make highlighting configurable
+        bl_params = bl_params.update('hl' => 'on')
+        eds = EBSCO::EDS::Session.new(eds_options(eds_params.update(caller: 'bl-search')))
         # call solr_retrieve_list if query is for a list of ids (bookmarks, email, sms, cite, etc.)
         if bl_params && bl_params['q'] && bl_params['q']['id']
-          eds = EBSCO::EDS::Session.new(eds_options(eds_params))
-          results = eds.solr_retrieve_list({list: bl_params['q']['id']})
-          blacklight_config.response_model.new(results, bl_params, document_model: blacklight_config.document_model, blacklight_config: blacklight_config)
+          results = eds.solr_retrieve_list(list: bl_params['q']['id'])
         else
           # create EDS session, perform search and convert to solr response
-          eds = EBSCO::EDS::Session.new(eds_options(eds_params))
-          results = eds.search(bl_params)
-          results = results.to_solr
-          blacklight_config.response_model.new(results, bl_params, document_model: blacklight_config.document_model, blacklight_config: blacklight_config)
+          results = eds.search(bl_params).to_solr
         end
-
+        blacklight_config.response_model.new(results, bl_params,
+                                             document_model: blacklight_config.document_model,
+                                             blacklight_config: blacklight_config)
       end
     end
 
@@ -47,12 +47,16 @@ module Blacklight::Eds
     def eds_options(eds_params = {})
       guest = eds_params['guest']
       session_token = eds_params['session_token']
-      cache_key = guest ? 'eds_auth_token/guest' : 'eds_auth_token/user'
-      auth_token = Rails.cache.fetch(cache_key, expires_in: 30.minutes, race_condition_ttl: 10) do
-        s = EBSCO::EDS::Session.new
+      auth_token = Rails.cache.fetch('eds_auth_token', expires_in: 30.minutes, race_condition_ttl: 10) do
+        s = EBSCO::EDS::Session.new(caller: 'bl-repo-create-auth-token')
         s.auth_token
       end
-      {:auth_token => auth_token, :guest => guest, :session_token => session_token}
+      {
+        auth_token: auth_token,
+        guest: guest,
+        session_token: session_token,
+        caller: eds_params[:caller]
+      }
     end
 
   end
