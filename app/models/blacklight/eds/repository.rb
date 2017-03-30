@@ -26,7 +26,7 @@ module Blacklight::Eds
       benchmark('EDS fetch', level: :debug) do
 
         # results list passes a full searchbuilder, detailed record only passes params
-        bl_params = search_builder.kind_of?(SearchBuilder) ? search_builder.blacklight_params : search_builder
+        bl_params = search_builder.is_a?(SearchBuilder) ? search_builder.blacklight_params : search_builder
         # TODO: make highlighting configurable
         bl_params = bl_params.update('hl' => 'on')
         eds = EBSCO::EDS::Session.new(eds_options(eds_params.update(caller: 'bl-search')))
@@ -45,19 +45,11 @@ module Blacklight::Eds
 
     # Construct EDS Session options
     def eds_options(eds_params = {})
-      guest = eds_params['guest']
-      session_token = eds_params['session_token']
-      auth_token = Rails.cache.fetch('eds_auth_token', expires_in: 30.minutes, race_condition_ttl: 10) do
-        s = EBSCO::EDS::Session.new(caller: 'bl-repo-create-auth-token')
-        s.auth_token
-      end
       {
-        auth_token: auth_token,
-        guest: guest,
-        session_token: session_token,
+        guest: eds_params['guest'],
+        session_token: eds_params['session_token'],
         caller: eds_params[:caller]
       }
     end
-
   end
 end

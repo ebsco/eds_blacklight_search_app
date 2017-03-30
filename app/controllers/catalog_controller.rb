@@ -7,34 +7,21 @@ class CatalogController < ApplicationController
 
   before_action :eds_init
   def eds_init
-
-    # fetch auth token from cache
-    auth_token = Rails.cache.fetch('eds_auth_token', expires_in: 30.minutes, race_condition_ttl: 10) do
-      auth_session = EBSCO::EDS::Session.new(caller: 'create-auth-token')
-      token = auth_session.auth_token
-      auth_session.end
-      token
-    end
-
     guest = current_or_guest_user.guest
     if session.key?('guest')
       # user login/logon, update guest status in session
       if session['guest'] != guest
         session['guest'] = guest
-        s = EBSCO::EDS::Session.new(guest: guest, auth_token: auth_token,
-                                    caller: 'new-session-guest-status-changed')
-        session['eds_session_token'] = s.session_token
+        session['eds_session_token'] =
+          EBSCO::EDS::Session.new(guest: guest,
+                                  caller: 'status-changed').session_token
       end
     else
       # new user session, set guest and session token
       session['guest'] = guest
-      unless session.key?('eds_session_token')
-        s = EBSCO::EDS::Session.new(guest: guest, auth_token: auth_token,
-                                    caller: 'new-session')
-        session['eds_session_token'] = s.session_token
-      end
+      session['eds_session_token'] =
+        EBSCO::EDS::Session.new(guest: guest, caller: 'new-session').session_token
     end
-
     puts 'session token: ' + session['eds_session_token'].inspect
     puts 'session guest: ' + session['guest'].inspect
   end
