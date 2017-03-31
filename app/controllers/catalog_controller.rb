@@ -123,5 +123,7 @@ class CatalogController < ApplicationController
     config.add_sort_field 'pub_date_sort desc', :label => 'most recent'
     #config.add_sort_field 'pub_date_sort asc', :label => 'oldest'
 
+    config.spell_max = 9999999999
+
   end
 end
