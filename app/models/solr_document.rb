@@ -31,4 +31,23 @@ class SolrDocument
   # and Blacklight::Document::SemanticFields#to_semantic_values
   # Recommendation: Use field names from Dublin Core
   use_extension(Blacklight::Document::DublinCore)
+
+  def export_as_apa_citation_txt
+    doc = self
+    cite = doc['citation_apa']
+    cite.html_safe
+  end
+
+  def export_as_mla_citation_txt
+    doc = self
+    cite = doc['citation_mla']
+    cite.html_safe
+  end
+
+  def export_as_chicago_citation_txt
+    doc = self
+    cite = doc['citation_chicago']
+    cite.html_safe
+  end
+
 end
