@@ -16,4 +16,10 @@ module ApplicationHelper
     links.to_s
   end
 
+  def doi_link(options={})
+    doi = options[:value].first
+    url = 'https://doi.org/' + doi.to_s
+    link_to( url, url, target: '_blank')
+  end
+
 end

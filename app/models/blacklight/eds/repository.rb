@@ -29,6 +29,7 @@ module Blacklight::Eds
         bl_params = search_builder.is_a?(SearchBuilder) ? search_builder.blacklight_params : search_builder
         # TODO: make highlighting configurable
         bl_params = bl_params.update('hl' => 'on')
+        # puts 'BL PARAMS: ' + bl_params.inspect
         eds = EBSCO::EDS::Session.new(eds_options(eds_params.update(caller: 'bl-search')))
         # call solr_retrieve_list if query is for a list of ids (bookmarks, email, sms, cite, etc.)
         if bl_params && bl_params['q'] && bl_params['q']['id']

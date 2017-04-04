@@ -39,6 +39,7 @@ class CatalogController < ApplicationController
     #config.add_index_field 'title_display', label: 'Title', :highlight => true
     config.add_index_field 'author_display', label: 'Author'
     config.add_index_field 'format', label: 'Format'
+    config.add_index_field 'academic_journal', label: 'Journal'
     config.add_index_field 'language_facet', label: 'Language'
     config.add_index_field 'pub_date', label: 'Year'
     config.add_index_field 'pub_info', label: 'Published'
@@ -69,11 +70,13 @@ class CatalogController < ApplicationController
     # solr fields to be displayed in the show (single result) view
     #   The ordering of the field names is the order of the display
     config.add_show_field 'title_display', label: 'Title'
+    config.add_show_field 'academic_journal', label: 'Journal'
     config.add_show_field 'author_display', label: 'Author'
     config.add_show_field 'format', label: 'Format'
     config.add_show_field 'pub_date', label: 'Publication Date'
     config.add_show_field 'pub_info', label: 'Published'
     config.add_show_field 'abstract', label: 'Abstract'
+    config.add_show_field 'doi', label: 'DOI', helper_method: :doi_link
     config.add_show_field 'links', helper_method: :eds_links, label: 'Links'
 
     config.add_search_field 'all_fields', label: 'All Fields'
@@ -123,6 +126,7 @@ class CatalogController < ApplicationController
     config.add_sort_field 'pub_date_sort desc', :label => 'most recent'
     #config.add_sort_field 'pub_date_sort asc', :label => 'oldest'
 
+    # force spell checking in all cases, no max results required
     config.spell_max = 9999999999
 
   end
