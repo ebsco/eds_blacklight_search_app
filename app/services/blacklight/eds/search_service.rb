@@ -53,12 +53,12 @@ module Blacklight::Eds
     # Get the previous and next document from a search result
     # @return [Blacklight::Solr::Response, Array<Blacklight::SolrDocument>] the solr response and a list of the first and last document
     def previous_and_next_documents_for_search(index, request_params, extra_controller_params = {})
+      # add an EDS current page index for next-previous search
+      @eds_params.update('previous-next-index' => index+1)
       p = previous_and_next_document_params(index)
       query = search_builder.with(request_params).start(p.delete(:start)).rows(p.delete(:rows)).merge(extra_controller_params).merge(p)
-      puts 'PREVIOUS-NEXT QUERY: ' + query.inspect
       response = @repository.search(query, @eds_params)
       document_list = response.documents
-
       # only get the previous doc if there is one
       prev_doc = document_list.first if index > 0
       next_doc = document_list.last if (index + 1) < response.total
