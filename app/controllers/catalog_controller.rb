@@ -78,6 +78,7 @@ class CatalogController < ApplicationController
     config.add_show_field 'abstract', label: 'Abstract'
     config.add_show_field 'doi', label: 'DOI', helper_method: :doi_link
     config.add_show_field 'links', helper_method: :eds_links, label: 'Links'
+    config.add_show_field 'html_fulltext', label: 'Full Text', helper_method: :html_fulltext
 
     config.add_search_field 'all_fields', label: 'All Fields'
 
