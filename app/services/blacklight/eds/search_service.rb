@@ -42,6 +42,10 @@ module Blacklight::Eds
       end
     end
 
+    def fetch_fulltext(id, type, extra_controller_params)
+      @repository.fulltext_url id, type,extra_controller_params, @eds_params
+    end
+
     ##
     # Get the solr response when retrieving only a single facet field
     # @return [Blacklight::Solr::Response] the solr response

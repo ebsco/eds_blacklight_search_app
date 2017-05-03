@@ -56,6 +56,12 @@ module Blacklight::Eds::Catalog
     end
   end
 
+  def fulltext
+    eds_params = {'guest' => session['guest'], 'session_token' => session['eds_session_token']}
+    fulltext_url = search_service.fetch_fulltext(params[:id], params[:type], eds_params)
+    redirect_to fulltext_url, status: 303 if !fulltext_url.nil?
+  end
+
   # updates the search counter (allows the show view to paginate)
   def track
     search_session['counter'] = params[:counter]

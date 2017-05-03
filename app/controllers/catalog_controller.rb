@@ -43,6 +43,7 @@ class CatalogController < ApplicationController
     config.add_index_field 'language_facet', label: 'Language'
     config.add_index_field 'pub_date', label: 'Year'
     config.add_index_field 'pub_info', label: 'Published'
+    config.add_index_field 'fulltext_link', label: 'Fulltext', helper_method: :best_fulltext
     config.add_index_field 'id'
 
     # solr field configuration for document/show views
@@ -77,7 +78,8 @@ class CatalogController < ApplicationController
     config.add_show_field 'pub_info', label: 'Published'
     config.add_show_field 'abstract', label: 'Abstract'
     config.add_show_field 'doi', label: 'DOI', helper_method: :doi_link
-    config.add_show_field 'links', helper_method: :eds_links, label: 'Links'
+    # config.add_show_field 'links', helper_method: :eds_links, label: 'Links'
+    config.add_show_field 'fulltext_link', label: 'Fulltext', helper_method: :best_fulltext
     config.add_show_field 'html_fulltext', label: 'Full Text', helper_method: :html_fulltext
 
     config.add_search_field 'all_fields', label: 'All Fields'

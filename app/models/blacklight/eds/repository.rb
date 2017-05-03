@@ -48,6 +48,16 @@ module Blacklight::Eds
       end
     end
 
+    def fulltext_url(id, type, params = {}, eds_params = {})
+      eds = EBSCO::EDS::Session.new(eds_options(eds_params.update(caller: 'bl-repo-find')))
+      dbid = id.split('__').first
+      accession = id.split('__').last
+      accession.gsub!(/_/, '.')
+      record = eds.retrieve(dbid: dbid, an: accession)
+      url = record.fulltext_link(type)[:url]
+      return url
+    end
+
     # Construct EDS Session options
     def eds_options(eds_params = {})
       {
